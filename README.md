@@ -2,65 +2,113 @@
 
 ![Eagle OCR — Web Background](frontend/eaglebk.png)
 
-Eagle OCR (Eagle-Eye) is a prototype vehicle plate recognition and lorry revenue/fine management system for county-level traffic enforcement. It combines computer vision (OpenCV), Tesseract OCR, and lightweight local databases (SQLite) with small CLI utilities and a static county dashboard. The project is actively under development — expect breaking changes and incomplete features.
+[![Status](https://img.shields.io/badge/status-development-orange)](https://github.com/smigoh/Eagle-Eye)
+[![Language](https://img.shields.io/badge/language-Python%20%7C%20Java%20%7C%20C%2B%2B-blue)](https://github.com/smigoh/Eagle-Eye)
 
-## Project snapshot
-- Language(s): Python (FastAPI), Java, C++, HTML/CSS/JavaScript
-- Runtime / Frameworks: FastAPI (uvicorn) for the OCR/video processing API; plain static frontend; Java and C++ command-line tools using SQLite.
+Eagle OCR is an integrated computer-vision and weighbridge revenue management system designed for government use. It automates vehicle identification and weighbridge revenue capture by combining camera-based license-plate capture, OCR, weight recording, and centralized record-keeping and analytics. Eagle OCR helps county governments and national transport/regulatory agencies reduce revenue leakage, speed enforcement, and improve operational efficiency at weighbridges, parking areas and checkpoints.
 
-## What it does
-- Process uploaded videos and attempt to detect license plate regions using OpenCV contour detection.
-- Use Tesseract OCR to read plate text from candidate regions and compute net weight, revenue, and fines per vehicle.
-- Store processed records in a local SQLite database.
-- Provide example command-line utilities (Java and C++) for manual data entry, reporting and revenue calculations.
-- Includes a static frontend (frontend/eagle.html) which is a county portal mockup (not yet integrated with the API).
+> NOTE: This project is under active development. Expect breaking changes and incomplete features.
 
-## Quickstart (development)
-Prerequisites: Python 3.8+, system Tesseract OCR installed, and common Python packages (opencv-python, pytesseract, fastapi, uvicorn, numpy).
+## Quick links
+- Live frontend (GitHub Pages): https://smigoh.github.io/Eagle-Eye/  (deployment via GitHub Actions)
+- API: FastAPI service in `eagleai.py` (POST `/process`, GET `/records`)
+- Frontend: `frontend/eagle.html`, `frontend/eagle.js`, `frontend/eagle.css`
+- CLI tools: `eagle.java` (Java) and `eagle.c++` (C++)
 
-1. Install system Tesseract (Ubuntu example):
+---
+
+## Why Eagle OCR
+Eagle OCR is built to support Kenyan county governments and national agencies by:
+
+- Automating plate capture at weighbridges and parking points.
+- Linking weighbridge measurements to vehicles (gross/tare/net) to compute revenue and fines.
+- Providing auditable digital records for enforcement and reporting.
+- Integrating with national registries and payment systems (future integration).
+
+### Advantages
+- Reduced revenue leakage through automated recording.
+- Faster vehicle processing and reduced queueing at weighbridges.
+- Consistent enforcement with auditable records.
+- Data-driven planning for road maintenance and policy.
+
+---
+
+## Visual assets & icons
+Use the images in `frontend/` for branding and presentation. Example assets:
+
+- `frontend/logo.png` — primary logo
+- `frontend/eaglebk.png` — startup background (used in README)
+- `frontend/login.png` / `frontend/logologin.png` — login and banner images
+
+You can include these in documents or slides with simple Markdown image links:
+
+```markdown
+![Eagle Logo](frontend/logo.png)
+```
+
+For icons and UI templates, the frontend uses Font Awesome (CDN) and simple glass-panel templates in `frontend/eagle.html` + `frontend/eagle.css`.
+
+---
+
+## Frontend (stylish, interactive)
+The static frontend is in `frontend/`. It now includes an upload UI to POST video files to the API and a results area to show OCR + weight results.
+
+Run locally:
+
+```bash
+cd frontend
+python -m http.server 8000
+# open http://localhost:8000/eagle.html
+```
+
+Production: the repository includes a GitHub Actions workflow that publishes the `frontend/` directory to GitHub Pages. See `.github/workflows/gh-pages.yml`.
+
+---
+
+## How to run the API (development)
+Prerequisites: Python 3.8+, system Tesseract OCR installed, and Python deps.
+
+1. Install system Tesseract (Ubuntu):
 ```bash
 sudo apt-get update
 sudo apt-get install -y tesseract-ocr libtesseract-dev
 ```
+
 2. Create virtualenv and install Python deps:
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 pip install fastapi uvicorn opencv-python pytesseract numpy
 ```
-3. Run the FastAPI service:
+
+3. Run the API:
 ```bash
 python eagleai.py
 # or
 uvicorn eagleai:app --host 0.0.0.0 --port 5000
 ```
-4. Upload a video to test (multipart/form-data):
-```bash
-curl -X POST "http://localhost:5000/process" \
-  -F "video=@/path/to/sample.mp4" \
-  -F "gross=30.0" \
-  -F "tare=10.0" \
-  -F "vtype=HEAVY"
-```
 
-## Important notes (development / FIXME)
-- The repository contains a large SQL schema script `eagle.sql` (Postgres-style, ~35 tables) used as a reference schema. The Python app (`eagleai.py`) currently uses a DB file variable set to `eagle.sql` by name which is likely incorrect — you probably want a SQLite database file like `eagle.db`. Check and update DB_FILE in `eagleai.py` before running.
-- Tesseract OCR accuracy depends heavily on camera resolution and plate formatting; the current detector is contour-based (not a learned detector) and may miss plates or include false positives.
-- The static frontend (frontend/) is a mockup and is not yet wired to the API endpoints. Integration and authentication are TODOs.
+4. From the frontend UI (or curl), POST a video and form fields (gross, tare, vtype). The frontend provides a simple upload form.
 
-## Where to look next
-- `eagleai.py` — FastAPI service, CV plate detector, OCR preprocessing, record storage.
-- `frontend/` — static web UI (eagle.html, eagle.js, eagle.css) and assets.
-- `eagle.java`, `eagle.c++` — example command-line programs for manual workflows and revenue calculations.
-- `eagle.sql` — full reference schema for a more complete production deployment.
+---
 
-## Status
-ACTIVE DEVELOPMENT — experimental prototype. Contributions, bug reports, and feature requests are welcome.
+## Debugging & deployment notes
+- The FastAPI app exposes `POST /process` to upload a video, and `GET /records` to fetch stored records (SQLite `eagle.db`).
+- The repo contains a reference Postgres schema `eagle.sql` (35 tables) for production planning. The runtime SQLite database is `eagle.db` (used by the Python/Java/C++ tools).
+- Deployment: a GitHub Actions workflow publishes the `frontend/` directory to GitHub Pages on push to `main`. After first deployment, enable Pages in the repository settings if needed.
+
+---
 
 ## Contributing
-If you'd like to help:
-- Open issues describing bugs or features.
-- Send pull requests with focused changes and tests where applicable.
-- For changes to the OCR/detection pipeline, include sample images and expected outputs.
+Contributions are welcome. Suggested starting points:
 
+- Improve plate detection (replace contour-based detector with a trained detector).
+- Harden backend (move to Postgres, add auth, logging, and migrations).
+- Improve frontend UX and add authentication.
+
+Please file issues or open a pull request with a focused change.
+
+---
+
+## License
+Specify license here. If you want an MIT license, add a LICENSE file and replace this section accordingly.
