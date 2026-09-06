@@ -1,6 +1,5 @@
 import java.sql.*;
 import java.util.*;
-import java.io.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -15,11 +14,11 @@ class Lorry {
     String type;
 
     public Lorry(String plateNumber, double grossWeight, double tareWeight, String type, double ratePerTon, String date) {
-        this.plateNumber = plateNumber;
+        this.plateNumber = plateNumber != null ? plateNumber.trim() : "";
         this.grossWeight = grossWeight;
         this.tareWeight = tareWeight;
         this.netWeight = grossWeight - tareWeight;
-        this.type = type;
+        this.type = type != null ? type.trim() : "";
         this.revenue = this.netWeight * ratePerTon;
         this.fine = calculateFine();
         this.date = date;
@@ -62,6 +61,10 @@ public class EagleRevenueSystemJSON {
         int choice;
         do {
             displayMenu();
+            while (!scanner.hasNextInt()) {
+                System.out.println("Please enter a number for menu choice.");
+                scanner.next();
+            }
             choice = scanner.nextInt();
             scanner.nextLine();
             switch(choice) {
@@ -114,16 +117,24 @@ public class EagleRevenueSystemJSON {
                 "INSERT INTO lorries(plate, type, gross, tare, net, revenue, fine, date) VALUES(?,?,?,?,?,?,?,?)")) {
 
             System.out.print("Enter plate number: ");
-            String plate = scanner.nextLine();
+            String plate = scanner.nextLine().trim();
             System.out.print("Enter vehicle type (LCV/Medium/Heavy/Tanker): ");
-            String type = scanner.nextLine();
+            String type = scanner.nextLine().trim();
             System.out.print("Enter gross weight: ");
+            while (!scanner.hasNextDouble()) {
+                System.out.println("Please enter a numeric gross weight.");
+                scanner.next();
+            }
             double gross = scanner.nextDouble();
             System.out.print("Enter tare weight: ");
+            while (!scanner.hasNextDouble()) {
+                System.out.println("Please enter a numeric tare weight.");
+                scanner.next();
+            }
             double tare = scanner.nextDouble();
             scanner.nextLine();
             System.out.print("Enter date (yyyy-MM-dd): ");
-            String date = scanner.nextLine();
+            String date = scanner.nextLine().trim();
 
             Lorry lorry = new Lorry(plate, gross, tare, type, RATE_PER_TON, date);
 
