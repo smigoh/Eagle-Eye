@@ -51,31 +51,49 @@ public:
         }
     }
 
-    // Insert Lorry
+    // Insert Lorry using prepared statement (safe)
     void insertLorry(const Lorry& lorry) {
-        string sql = "INSERT INTO lorries (plate_number, gross_weight, tare_weight, net_weight, weigh_time) VALUES ('" +
-                     lorry.plate_number + "', " +
-                     to_string(lorry.gross_weight) + ", " +
-                     to_string(lorry.tare_weight) + ", " +
-                     to_string(lorry.net_weight) + ", " +
-                     to_string(lorry.weigh_time) + ");";
-        execute(sql);
+        const char* sql = "INSERT INTO lorries (plate_number, gross_weight, tare_weight, net_weight, weigh_time) VALUES (?, ?, ?, ?, ?);";
+        sqlite3_stmt* stmt = nullptr;
+        if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+            cerr << "Failed to prepare insertLorry statement." << endl;
+            return;
+        }
+        sqlite3_bind_text(stmt, 1, lorry.plate_number.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_double(stmt, 2, lorry.gross_weight);
+        sqlite3_bind_double(stmt, 3, lorry.tare_weight);
+        sqlite3_bind_double(stmt, 4, lorry.net_weight);
+        sqlite3_bind_int64(stmt, 5, static_cast<sqlite3_int64>(lorry.weigh_time));
+
+        if (sqlite3_step(stmt) != SQLITE_DONE) {
+            cerr << "Failed to execute insertLorry: " << sqlite3_errmsg(db) << endl;
+        }
+        sqlite3_finalize(stmt);
     }
 
-    // Insert Revenue
+    // Insert Revenue using prepared statement
     void insertRevenue(const Revenue& rev) {
-        string sql = "INSERT INTO revenue (lorry_id, amount, recorded_time) VALUES (" +
-                     to_string(rev.lorry_id) + ", " +
-                     to_string(rev.amount) + ", " +
-                     to_string(rev.recorded_time) + ");";
-        execute(sql);
+        const char* sql = "INSERT INTO revenue (lorry_id, amount, recorded_time) VALUES (?, ?, ?);";
+        sqlite3_stmt* stmt = nullptr;
+        if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+            cerr << "Failed to prepare insertRevenue statement." << endl;
+            return;
+        }
+        sqlite3_bind_int(stmt, 1, rev.lorry_id);
+        sqlite3_bind_double(stmt, 2, rev.amount);
+        sqlite3_bind_int64(stmt, 3, static_cast<sqlite3_int64>(rev.recorded_time));
+
+        if (sqlite3_step(stmt) != SQLITE_DONE) {
+            cerr << "Failed to execute insertRevenue: " << sqlite3_errmsg(db) << endl;
+        }
+        sqlite3_finalize(stmt);
     }
 
     // Fetch all lorries
     vector<Lorry> getLorries() {
         vector<Lorry> lorries;
         sqlite3_stmt* stmt;
-        string sql = "SELECT * FROM lorries;";
+        string sql = "SELECT id, plate_number, gross_weight, tare_weight, net_weight, weigh_time FROM lorries;";
         if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, 0) != SQLITE_OK) {
             cerr << "Failed to fetch lorries." << endl;
             return lorries;
@@ -83,11 +101,12 @@ public:
         while (sqlite3_step(stmt) == SQLITE_ROW) {
             Lorry l;
             l.id = sqlite3_column_int(stmt, 0);
-            l.plate_number = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+            const unsigned char* text = sqlite3_column_text(stmt, 1);
+            l.plate_number = text ? reinterpret_cast<const char*>(text) : string();
             l.gross_weight = sqlite3_column_double(stmt, 2);
             l.tare_weight = sqlite3_column_double(stmt, 3);
             l.net_weight = sqlite3_column_double(stmt, 4);
-            l.weigh_time = sqlite3_column_int(stmt, 5);
+            l.weigh_time = static_cast<time_t>(sqlite3_column_int64(stmt, 5));
             lorries.push_back(l);
         }
         sqlite3_finalize(stmt);
@@ -98,8 +117,9 @@ public:
     double getRevenueByLorry(int lorry_id) {
         double total = 0;
         sqlite3_stmt* stmt;
-        string sql = "SELECT SUM(amount) FROM revenue WHERE lorry_id=" + to_string(lorry_id) + ";";
+        string sql = "SELECT SUM(amount) FROM revenue WHERE lorry_id=?;";
         if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, 0) != SQLITE_OK) return total;
+        sqlite3_bind_int(stmt, 1, lorry_id);
         if (sqlite3_step(stmt) == SQLITE_ROW) {
             total = sqlite3_column_double(stmt, 0);
         }
@@ -162,7 +182,7 @@ int main() {
 
         if (choice == 1) {
             Lorry l;
-            cout << "Plate Number: "; cin >> l.plate_number;
+            cout << "Plate Number: "; cin >> ws; getline(cin, l.plate_number);
             cout << "Gross Weight: "; cin >> l.gross_weight;
             cout << "Tare Weight: "; cin >> l.tare_weight;
             l.net_weight = calculateNetWeight(l.gross_weight, l.tare_weight);
