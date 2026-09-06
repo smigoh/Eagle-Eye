@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EAGLES AI — CCTV Dashboard (Homepage)</title>
+
+  <style>
+  
+    :root{
+      --bg-1:#071217;
+      --bg-2:#0a1220;
+      --glass: rgba(255,255,255,0.04);
+      --glass-2: rgba(255,255,255,0.02);
+      --accent-1: #6a5cff;
+      --accent-2: #ff4d6d;
+      --glass-border: rgba(255,255,255,0.06);
+      --card-radius: 14px;
+      --panel-width: 1100px;
+      --text-main: #e6eef8;
+      --muted: rgba(230,238,248,0.65);
+      --glass-blur: 10px;
+      --glass-transition: 420ms cubic-bezier(.2,.9,.2,1);4
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+    body{
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: radial-gradient(1200px 800px at 10% 10%, rgba(15,20,30,0.6), rgba(10,12,17,1) 45%), linear-gradient(180deg,#05101a,#071219 60%);
+      color:var(--text-main);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      padding:24px;
+      display:flex;
+      justify-content:center;
+    }
+
+    /* wrapper */
+    .app {
+      width: min(1180px, 96vw);
+      max-width:1180px;
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+    }
+
+    /* -------------------------
+       Topbar
+       ------------------------- */
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:12px 18px;
+      border-radius:16px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border:1px solid var(--glass-border);
+      backdrop-filter: blur(8px) saturate(1.05);
+      box-shadow:0 8px 30px rgba(2,6,10,0.6);
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      font-weight:700;
+      letter-spacing:1px;
+      font-size:18px;
+    }
+    .brand img{width:40px;height:40px;object-fit:contain;border-radius:8px}
+
+    .nav{
+      display:flex;
+      gap:12px;
+    }
+    .nav a{
+      color:var(--muted);
+      text-decoration:none;
+      padding:8px 12px;
+      border-radius:10px;
+      font-weight:600;
+      transition: all 200ms ease;
+    }
+    .nav a:hover{color:var(--text-main);background:rgba(255,255,255,0.02)}
+
+    .top-actions{display:flex;gap:10px;align-items:center}
+    .search{
+      background:rgba(255,255,255,0.02);
+      border:1px solid rgba(255,255,255,0.03);
+      padding:8px 12px;border-radius:10px;color:var(--muted)
+    }
+    .badge-labs{padding:6px 10px;border-radius:10px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));color:#fff;font-weight:700;font-size:13px}
+
+    /* -------------------------
+       Hero / Live Preview
+       ------------------------- */
+    .hero{
+      display:grid;
+      grid-template-columns: 1fr 420px;
+      gap:20px;
+      align-items:start;
+    }
+    .hero-card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:var(--card-radius);
+      padding:28px;
+      border:1px solid var(--glass-border);
+      backdrop-filter: blur(var(--glass-blur));
+      min-height: 340px;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .hero-left h1{
+      font-size:48px;
+      line-height:1;
+      margin-bottom:8px;
+      letter-spacing:1px;
+      color:var(--text-main)
+    }
+    .hero-left p.lead{color:var(--muted);max-width:640px;margin-bottom:18px;font-size:15px}
+
+    .hero-cta{display:flex;gap:12px;align-items:center}
+    .btn{
+      padding:12px 18px;border-radius:12px;border:none;cursor:pointer;font-weight:700;
+      box-shadow:0 8px 20px rgba(5,8,15,0.6);
+    }
+    .btn.primary{background:linear-gradient(90deg,var(--accent-1),#4ac0ff);color:#021;box-shadow:0 8px 26px rgba(74,92,255,0.14)}
+    .btn.ghost{background:rgba(255,255,255,0.02);color:var(--text-main);border:1px solid rgba(255,255,255,0.03)}
+
+    /* hero right - live feed */
+    .hero-right{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .live-window{
+      height:340px;
+      border-radius:12px;
+      overflow:hidden;
+      position:relative;
+      border:1px solid rgba(255,255,255,0.03);
+      background:linear-gradient(180deg, rgba(4,6,10,0.6), rgba(10,14,20,0.6));
+    }
+    .live-window video, .live-window img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+      filter:contrast(1.02) saturate(0.9);
+    }
+    .live-overlay{
+      position:absolute;left:12px;top:12px;padding:8px 10px;border-radius:8px;background:rgba(0,0,0,0.45);font-weight:800;color:#fff;letter-spacing:0.6px
+    }
+    .rec-dot{
+      position:absolute;right:12px;top:12px;width:12px;height:12px;border-radius:50%;background:#ff4d4d;box-shadow:0 0 8px rgba(255,77,77,0.6)
+    }
+
+    /* -------------------------
+       Cards grid (live footages)
+       ------------------------- */
+    .section{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .section .section-title{font-size:20px;font-weight:700;margin-bottom:6px}
+    .cards-grid{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:14px;
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));
+      border-radius:12px;padding:14px;border:1px solid rgba(255,255,255,0.03);
+      cursor:pointer;transition: transform 200ms ease, box-shadow 200ms ease;
+      display:flex;flex-direction:column;gap:10px;
+      min-height:120px;
+      position:relative;
+      overflow:hidden;
+      backdrop-filter: blur(6px);
+    }
+    .card:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(2,6,12,0.55)}
+    .card img{width:100%;height:86px;object-fit:cover;border-radius:8px}
+    .card h3{font-size:15px;margin-top:4px}
+    .card p{color:var(--muted);font-size:13px}
+
+    /* Tag badges for backend tech stack on the page */
+    .tech-tags{
+      display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;
+    }
+    .tech-tags .tag{
+      font-size:12px;padding:6px 8px;border-radius:999px;background:rgba(255,255,255,0.02);
+      border:1px solid rgba(255,255,255,0.03);color:var(--muted);
+    }
+
+    /* -------------------------
+       Glass panel slider (content "pages" slide in)
+       ------------------------- */
+    .glass-shell{
+      position:fixed;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      pointer-events:none; /* inactive when closed */
+    }
+    .glass-panel{
+      width: min(var(--panel-width), 96vw);
+      max-width: 1160px;
+      height: min(78vh, 820px);
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:20px;
+      border:1px solid var(--glass-border);
+      backdrop-filter: blur(14px) saturate(1.1);
+      box-shadow: 0 50px 120px rgba(2,6,14,0.7);
+      overflow:hidden;
+      transform: translateY(40px) scale(.995);
+      transition: transform var(--glass-transition), opacity var(--glass-transition);
+      opacity:0;
+      pointer-events:auto;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .glass-panel.open{
+      transform: translateY(0) scale(1);
+      opacity:1;
+    }
+
+    /* inner layout: left nav + content area (slidable horizontally) */
+    .panel-inner{
+      display:flex;
+      height:100%;
+    }
+    .panel-side{
+      width:260px;
+      border-right:1px solid rgba(255,255,255,0.02);
+      padding:18px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      background:linear-gradient(90deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
+    }
+    .panel-side .mini{
+      font-size:13px;color:var(--muted)
+    }
+    .panel-side .panel-link{
+      padding:10px;border-radius:10px;color:var(--text-main);cursor:pointer;background:transparent;border:1px solid rgba(255,255,255,0.015);
+      transition: background 160ms ease;
+    }
+    .panel-side .panel-link:hover{background:rgba(255,255,255,0.02)}
+
+    .panel-content{
+      flex:1;
+      position:relative;
+      overflow:hidden;
+    }
+
+    /* slider track */
+    .slider-track{
+      display:flex;
+      height:100%;
+      transition: transform 420ms cubic-bezier(.2,.9,.2,1);
+      will-change:transform;
+    }
+    .slider-page{
+      min-width:100%;
+      padding:20px 26px;
+      overflow:auto;
+    }
+
+    /* panel header inside pages */
+    .panel-header{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;
+    }
+    .panel-header h2{font-size:20px}
+    .close-btn{background:transparent;border:1px solid rgba(255,255,255,0.03);padding:8px;border-radius:10px;cursor:pointer;color:var(--muted)}
+
+    /* page specific styles */
+    .page-live .video-large{
+      width:100%;height:360px;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.03)
+    }
+    .page-live .video-large video{width:100%;height:100%;object-fit:cover}
+    .page-license .plates-list{display:flex;flex-direction:column;gap:8px}
+    .license-row{
+      display:flex;gap:12px;align-items:center;padding:10px;border-radius:10px;background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.02)
+    }
+    .license-row img{width:120px;height:70px;object-fit:cover;border-radius:8px}
+    .license-data{display:flex;flex-direction:column;gap:4px}
+    .license-data .plate{font-weight:800;font-size:16px}
+    .license-data .meta{color:var(--muted);font-size:13px}
+
+    .page-analytics .chart{
+      height:260px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03)
+    }
+
+    /* VB.NET info panel sample */
+    .vbnet-box{
+      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
+      border:1px solid rgba(255,255,255,0.03);
+      padding:12px;border-radius:10px;
+      font-family: "Courier New", monospace;color:var(--muted);font-size:13px;
+    }
+
+    /* responsive */
+    @media (max-width:980px){
+      .hero{grid-template-columns:1fr;gap:14px}
+      .cards-grid{grid-template-columns:repeat(2,1fr)}
+      .panel-side{display:none}
+      .glass-panel{width:96vw;height:86vh}
+    }
+    @media (max-width:640px){
+      .cards-grid{grid-template-columns:repeat(1,1fr)}
+      .hero-left h1{font-size:36px}
+      .hero-left p.lead{font-size:14px}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app" role="application">
+
+    <!-- Topbar -->
+    <header class="topbar" role="banner">
+      <div class="brand">
+        <img src="logo.png" alt="logo" id="brandLogo">
+        <div>
+          <div style="font-size:13px;color:var(--muted)">TAITA TAVETA &amp; COUNTY GOVERNMENT</div>
+          <div style="font-weight:800">EAGLES AI</div>
+        </div>
+      </div>
+
+      <nav class="nav" aria-label="Main Navigation">
+        <a href="#" data-nav="home">Home</a>
+        <a href="#" data-nav="live">Live Footages</a>
+        <a href="#" data-nav="scanner">Car Scanner</a>
+        <a href="#" data-nav="db">Licenses DB</a>
+      </nav>
+
+      <div class="top-actions">
+        <div class="search" role="search">
+          <input type="search" id="searchInput" placeholder="Search camera, plate, car..." style="background:transparent;border:none;color:var(--muted);outline:none;min-width:160px">
+        </div>
+        <div class="badge-labs">PoC • AI</div>
+      </div>
+    </header>
+
+    <!-- HERO: left content + live preview -->
+    <section class="hero" aria-labelledby="heroTitle">
+      <div class="hero-card hero-left">
+        <h1 id="heroTitle">EAGLES AI</h1>
+        <p class="lead">Intelligent CCTV platform — real-time license plate detection, car recognition,
+          event alerts and long-term analytics. Tap a card to slide the glass panel with live tools.</p>
+
+        <div class="hero-cta" style="align-items:center">
+          <button class="btn primary" id="btnOpenLive">Open Live Viewer</button>
+          <button class="btn ghost" id="btnOpenScanner">Open Car Scanner</button>
+        </div>
+
+        <div style="margin-top:16px">
+          <div class="section-title" style="font-size:13px;color:var(--muted)">Backend & Integrations</div>
+          <div class="tech-tags" aria-hidden>
+            <span class="tag">SQL</span>
+            <span class="tag">Python</span>
+            <span class="tag">Java</span>
+            <span class="tag">C++</span>
+            <span class="tag">VB.NET (Forms)</span>
+          </div>
+        </div>
+
+        <div style="margin-top:18px;color:var(--muted);font-size:13px">
+          <strong>Quick notes:</strong>
+          <ul style="margin-top:8px;list-style:disc;padding-left:18px;color:var(--muted)">
+            <li>License recognition uses OCR (EasyOCR) + plate-localizer (YOLOv5/YOLOv8).</li>
+            <li>Car brand/model classification served by a Python model endpoint (Torch/Triton).</li>
+            <li>SQL database stores scans, events, and user audits (SQLite for PoC, Postgres for production).</li>
+            <li>VB.NET example included in Licenses DB panel for Windows form integration.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="hero-right">
+        <div class="live-window" id="liveWindow" aria-live="polite">
+          <!-- Use the local CCTV/still image or video file in container as placeholder -->
+          <img src="/mnt/data/A_digital_screenshot_of_Eagles_AI's_website_homepa.png" alt="Live CCTV preview">
+          <div class="live-overlay">MAIN HIGHWAY • Cam #12</div>
+          <div class="rec-dot" title="Recording"></div>
+        </div>
+
+        <div style="display:flex;gap:12px">
+          <div style="flex:1" class="card" onclick="openPanel('license')">
+            <img src="/mnt/data/A_digital_screenshot_showcases_the_user_interface_.png" alt="thumb">
+            <h3>License Detection</h3>
+            <p>Realtime plate extraction — click to open panel</p>
+          </div>
+
+          <div style="flex:1" class="card" onclick="openPanel('ident')">
+            <img src="/mnt/data/Squid game landing page banner - selva guru.jpeg" alt="thumb">
+            <h3>Car Identification</h3>
+            <p>Brand &amp; model recognition</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Live footages grid -->
+    <section class="section">
+      <div class="section-title">Live footages</div>
+
+      <div class="cards-grid" id="cardsGrid">
+        <div class="card" data-target="live" onclick="openPanel('live')">
+          <img src="/mnt/data/A_digital_screenshot_of_Eagles_AI's_website_homepa.png" alt="live-thumb">
+          <h3>Main Highway — Cam #12</h3>
+          <p>24/7 stream • License events: 18</p>
+        </div>
+
+        <div class="card" data-target="license" onclick="openPanel('license')">
+          <img src="/mnt/data/A_digital_screenshot_showcases_the_user_interface_.png" alt="license-thumb">
+          <h3>License Detection</h3>
+          <p>Recent recognized plates &amp; confidence</p>
+        </div>
+
+        <div class="card" data-target="ident" onclick="openPanel('ident')">
+          <img src="/mnt/data/Squid game landing page banner - selva guru.jpeg" alt="ident-thumb">
+          <h3>Car Identification</h3>
+          <p>Brand / model detections</p>
+        </div>
+
+        <div class="card" data-target="archive" onclick="openPanel('archive')">
+          <img src="/mnt/data/A_digital_screenshot_showcases_the_user_interface_.png" alt="archive-thumb">
+          <h3>Archive / Video Library</h3>
+          <p>Search recordings • export clips</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Alerts & feed -->
+    <section class="section" aria-live="polite">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="section-title">Alerts feed</div>
+        <div style="color:var(--muted);font-size:13px">Latest AI events &amp; system logs</div>
+      </div>
+
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px">
+        <div class="card" style="min-width:320px">
+          <h3>Plate match — 1 hour ago</h3>
+          <p class="muted">Plate: <strong style="letter-spacing:1px">KBN-399G</strong> • Confidence: 92%</p>
+          <div style="margin-top:8px;color:var(--muted)">Matched to database record: <em>vehicleID 1290</em></div>
+        </div>
+
+        <div class="card" style="min-width:320px">
+          <h3>Car brand flagged — 3 hours ago</h3>
+          <p class="muted">Possible stolen model: <strong>Toyota Hilux</strong> • Confidence: 81%</p>
+          <div style="margin-top:8px;color:var(--muted)">Suggested action: <em>Notify patrol</em></div>
+        </div>
+
+        <div class="card" style="min-width:320px">
+          <h3>Payment graph spike</h3>
+          <p class="muted">Toll collection events increased 12% in last 24h</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer style="opacity:0.6;font-size:13px;margin-top:6px">
+      © 2025 Eagles AI — Proof of Concept • This UI uses glassmorphism sliding panels to present full tools.
+    </footer>
+  </div>
+
+  <!-- ========= Glass panel overlay (hidden by default) ========= -->
+  <div class="glass-shell" id="glassShell" aria-hidden="true">
+    <div class="glass-panel" role="dialog" aria-modal="true" id="glassPanel">
+      <div class="panel-inner">
+        <aside class="panel-side" aria-label="Panel Navigation">
+          <div class="mini">TOOLS</div>
+          <div class="panel-link" data-page="live" onclick="switchPanel('live')">Live Viewer</div>
+          <div class="panel-link" data-page="license" onclick="switchPanel('license')">License Database</div>
+          <div class="panel-link" data-page="ident" onclick="switchPanel('ident')">Car Identification</div>
+          <div class="panel-link" data-page="archive" onclick="switchPanel('archive')">Archive / Clips</div>
+          <div class="panel-link" data-page="analytics" onclick="switchPanel('analytics')">Analytics</div>
+
+          <div style="margin-top:auto">
+            <div style="font-size:12px;color:var(--muted)">Stack tags</div>
+            <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+              <span class="tag">SQL</span>
+              <span class="tag">Python</span>
+              <span class="tag">Java</span>
+              <span class="tag">C++</span>
+              <span class="tag">VB.NET</span>
+            </div>
+          </div>
+        </aside>
+
+        <main class="panel-content">
+          <div class="panel-header">
+            <h2 id="panelTitle">Live Viewer</h2>
+            <div>
+              <button class="close-btn" onclick="closePanel()">Close</button>
+            </div>
+          </div>
+
+          <div class="slider-track" id="sliderTrack">
+            <!-- PAGE: LIVE VIEWER -->
+            <section class="slider-page page-live" aria-labelledby="panelTitle">
+              <div class="video-large" role="region" aria-label="Large live video">
+                <!-- Placeholder video or live feed; in production this would be WebRTC or HLS stream -->
+                <video id="mainStream" controls autoplay muted playsinline>
+                  <source src="/mnt/data/A_digital_screenshot_of_Eagles_AI's_website_homepa.png" type="video/mp4">
+                  <!-- fallback image if no video -->
+                </video>
+              </div>
+
+              <div style="display:flex;gap:12px;margin-top:14px;align-items:flex-start">
+                <div style="flex:1">
+                  <h3>Camera: Main Highway — Cam #12</h3>
+                  <p style="color:var(--muted)">Live frame, run plate recognition or extract clips.</p>
+                  <div style="margin-top:12px;display:flex;gap:8px">
+                    <button class="btn primary" onclick="runOCR()">Run Plate OCR</button>
+                    <button class="btn ghost" onclick="captureClip()">Capture Clip</button>
+                  </div>
+                </div>
+
+                <div style="width:340px">
+                  <h4 style="margin-bottom:8px">Recent detections</h4>
+                  <div id="recentDetections" style="display:flex;flex-direction:column;gap:8px">
+                    <!-- dynamically filled by JS -->
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- PAGE: LICENSE DATABASE (VB.NET info + forms) -->
+            <section class="slider-page page-license">
+              <div>
+                <h3>License Database</h3>
+                <p style="color:var(--muted)">Search and manage recognized plates. Example VB.NET form integration details below.</p>
+
+                <div style="display:flex;gap:12px;margin-top:12px">
+                  <div style="flex:1">
+                    <div class="vbnet-box">
+<!-- VB.NET sample shown for integrators: This is informational UI text, not executed here. -->
+<pre>
+' VB.NET (WinForms) - Simple form fetch example (connect to SQL)
+Imports System.Data.SqlClient
+
+Public Class LicenseForm
+    Private Sub LoadPlates()
+        Dim conn As New SqlConnection("Server=yourserver;Database=cars;User Id=...;Password=...;")
+        Dim cmd As New SqlCommand("SELECT TOP 100 id, plate, owner, noted FROM scans ORDER BY created_at DESC", conn)
+        conn.Open()
+        Dim rdr As SqlDataReader = cmd.ExecuteReader()
+        While rdr.Read()
+            ' Populate ListView or DataGridView
+            ' e.g. ListView1.Items.Add(New ListViewItem(New String(){rdr("id"), rdr("plate")}))
+        End While
+        conn.Close()
+    End Sub
+End Class
+</pre>
+                    </div>
+                  </div>
+
+                  <div style="width:360px">
+                    <div style="font-weight:800;margin-bottom:8px">Search / Quick filters</div>
+                    <input id="plateSearch" placeholder="Enter plate (e.g. KBN399G)" style="width:100%;padding:10px;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,0.03);color:var(--muted)"/>
+
+                    <div style="margin-top:12px">
+                      <button class="btn primary" onclick="searchPlate()">Search</button>
+                      <button class="btn ghost" onclick="refreshPlates()">Refresh</button>
+                    </div>
+
+                    <div style="margin-top:12px;color:var(--muted);font-size:13px">
+                      <strong>Backend tags:</strong>
+                      <div style="display:flex;gap:8px;margin-top:8px">
+                        <span class="tag">SQL</span>
+                        <span class="tag">Python</span>
+                        <span class="tag">Java</span>
+                        <span class="tag">C++</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="margin-top:16px">
+                  <div class="plates-list" id="platesList">
+                    <!-- JS will inject recognized plate rows here -->
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            
+            <!-- PAGE: CAR IDENTIFICATION -->
+            <section class="slider-page page-ident">
+              <h3>Car Identification</h3>
+              <p style="color:var(--muted)">Upload an image or analyze a live frame to detect brand/model. Uses a Python model service for inference.</p>
+
+              <div style="display:flex;gap:12px;margin-top:12px;align-items:flex-start">
+                <div style="flex:1">
+                  <div style="padding:12px;border-radius:10px;background:rgba(255,255,255,0.01);border:1px solid rgba(255,255,255,0.02)">
+                    <input type="file" id="carFile" accept="image/*" />
+                    <div id="carPreview" style="margin-top:8px"></div>
+                    <div style="margin-top:8px;display:flex;gap:8px">
+                      <button class="btn primary" onclick="analyzeCar()">Analyze</button>
+                      <button class="btn ghost" onclick="clearCar()">Clear</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="width:360px">
+                  <h4>Last results</h4>
+                  <div id="carResults" style="display:flex;flex-direction:column;gap:8px;color:var(--muted)"></div>
+                </div>
+              </div>
+            </section>
+
+            <!-- PAGE: ARCHIVE / CLIPS -->
+            <section class="slider-page page-archive">
+              <h3>Archive / Video Library</h3>
+              <p style="color:var(--muted)">Browse saved clips. Click any clip to open the export dialog (MP4 / HLS).</p>
+
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px">
+                <!-- example clip cards -->
+                <div class="card">
+                  <img src="/mnt/data/A_digital_screenshot_showcases_the_user_interface_.png" alt="clip">
+                  <h3>Clip • 2025-05-01 08:34</h3>
+                  <p style="color:var(--muted)">Plate recognized: KBN399G</p>
+                </div>
+                <div class="card">
+                  <img src="/mnt/data/Squid game landing page banner - selva guru.jpeg" alt="clip">
+                  <h3>Clip • 2025-04-30 17:12</h3>
+                  <p style="color:var(--muted)">Event: Speeding</p>
+                </div>
+                <div class="card">
+                  <img src="/mnt/data/A_digital_screenshot_of_Eagles_AI's_website_homepa.png" alt="clip">
+                  <h3>Clip • 2025-04-29 11:02</h3>
+                  <p style="color:var(--muted)">Manual export ready</p>
+                </div>
+              </div>
+            </section>
+
+            <!-- PAGE: ANALYTICS -->
+            <section class="slider-page page-analytics">
+              <h3>Analytics</h3>
+              <p style="color:var(--muted)">Traffic, toll payments, device uptime, and detection accuracy over time.</p>
+
+              <div style="display:flex;gap:12px;margin-top:12px">
+                <div style="flex:1">
+                  <div class="chart" id="chartTraffic">[Traffic chart placeholder]</div>
+                </div>
+                <div style="width:360px">
+                  <div class="chart" id="chartPlates">[Plates per hour]</div>
+                </div>
+              </div>
+
+              <div style="margin-top:12px;color:var(--muted)">Tip: In production connect charts to your analytics microservice (InfluxDB/Prometheus + Grafana or a Python service producing series).</div>
+            </section>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========= Scripts (UI interactivity + demo PoC) ========= -->
+  <script>
+    // Basic panel control and slider logic
+    const glassShell = document.getElementById('glassShell');
+    const glassPanel = document.getElementById('glassPanel');
+    const sliderTrack = document.getElementById('sliderTrack');
+    const panelTitle = document.getElementById('panelTitle');
+
+    // map page names to slider index
+    const pages = ['live','license','ident','archive','analytics'];
+    function openPanel(page) {
+      if(!pages.includes(page)) page='live';
+      glassShell.style.pointerEvents='auto';
+      glassShell.style.display='flex';
+      setTimeout(()=> glassPanel.classList.add('open'), 20);
+      const idx = pages.indexOf(page);
+      sliderTrack.style.transform = `translateX(-${idx * 100}%)`;
+      panelTitle.innerText = pageLabel(page);
+      glassShell.setAttribute('aria-hidden','false');
+      // focus first element in panel if needed
+    }
+
+    function closePanel(){
+      glassPanel.classList.remove('open');
+      glassShell.setAttribute('aria-hidden','true');
+      setTimeout(()=> {
+        glassShell.style.pointerEvents='none';
+        glassShell.style.display='none';
+      }, 420);
+    }
+
+    function switchPanel(page){
+      const idx = pages.indexOf(page);
+      if(idx<0) return;
+      sliderTrack.style.transform = `translateX(-${idx * 100}%)`;
+      panelTitle.innerText = pageLabel(page);
+    }
+
+    function pageLabel(page){
+      switch(page){
+        case 'live': return 'Live Viewer';
+        case 'license': return 'License Database';
+        case 'ident': return 'Car Identification';
+        case 'archive': return 'Archive / Clips';
+        case 'analytics': return 'Analytics';
+        default: return 'Tool';
+      }
+    }
+
+    // convenience UI bindings
+    document.getElementById('btnOpenLive').addEventListener('click', ()=> openPanel('live'));
+    document.getElementById('btnOpenScanner').addEventListener('click', ()=> openPanel('ident'));
+
+    // populate recentDetections (demo)
+    const recentDetections = [
+      {plate:'KBN-399G',time:'08:34',cam:'Cam #12',img:'/mnt/data/A_digital_screenshot_showcases_the_user_interface_.png'},
+      {plate:'JXC-821Q',time:'07:58',cam:'Cam #03',img:'/mnt/data/Squid game landing page - selva guru.jpeg'}
+    ];
+    const recentEl = document.getElementById('recentDetections');
+    function renderDetections(){
+      recentEl.innerHTML='';
+      recentDetections.forEach(d=>{
+        const row = document.createElement('div');
+        row.className='license-row';
+        row.innerHTML = `
+          <img src="${d.img}" alt="frame">
+          <div class="license-data">
+            <div class="plate">${d.plate}</div>
+            <div class="meta">${d.cam} • ${d.time}</div>
+          </div>
+        `;
+        recentEl.appendChild(row);
+      });
+    }
+    renderDetections();
+
+    // Plates list demo
+    const platesList = document.getElementById('platesList');
+    function refreshPlates(){
+      platesList.innerHTML='';
+      for(let i=0;i<6;i++){
+        const id = 'scan-'+(1000+i);
+        const plate = ['KBN399G','JXC821Q','TST-003'][i%3];
+        const row = document.createElement('div');
+        row.className='license-row';
+        row.innerHTML = `<img src="/mnt/data/A_digital_screenshot_showcases_the_user_interface_.png" alt="">
+          <div class="license-data">
+            <div class="plate">${plate}</div>
+            <div class="meta">camera: Cam #${3+i} • ${new Date().toLocaleString()}</div>
+          </div>`;
+        platesList.appendChild(row);
+      }
+    }
+    refreshPlates();
+
+    function searchPlate(){
+      const q = document.getElementById('plateSearch').value.trim();
+      if(!q) return alert('Enter a plate to search (demo)');
+      // In production: call /api/license/search?q=...
+      alert('Searching plate: ' + q + ' (demo)');
+    }
+
+    // simple demo: OCR & analysis functions (placeholders)
+    function runOCR(){
+      // Demo behavior: push fake detection into recent list and UI
+      const fake = {plate:'NEW-'+Math.floor(Math.random()*900+100),time: new Date().toLocaleTimeString(),cam:'Cam #12',img:'/mnt/data/A_digital_screenshot_showcases_the_user_interface_.png'};
+      recentDetections.unshift(fake);
+      if(recentDetections.length>6) recentDetections.pop();
+      renderDetections();
+      alert('OCR run (demo) — plate: ' + fake.plate);
+    }
+
+    function captureClip(){
+      alert('Clip captured (demo). In production this posts an extract job to the backend.');
+    }
+
+    // car identification demo
+    const carFile = document.getElementById('carFile');
+    const carPreview = document.getElementById('carPreview');
+    const carResults = document.getElementById('carResults');
+
+    carFile.addEventListener('change', (e)=>{
+      const f = e.target.files[0];
+      if(!f) return;
+      const url = URL.createObjectURL(f);
+      carPreview.innerHTML = `<img src="${url}" style="width:100%;max-height:240px;border-radius:10px;object-fit:cover">`;
+    });
+
+    function analyzeCar(){
+      carResults.innerHTML = `<div style="color:var(--muted)">Sending image to model service (demo)...</div>`;
+      setTimeout(()=>{
+        carResults.innerHTML = `
+          <div style="font-weight:800">Detected: Toyota Corolla</div>
+          <div style="color:var(--muted)">Confidence: 87% • Model year guess: 2016-2019</div>
+        `;
+      },1000);
+    }
+    function clearCar(){ carPreview.innerHTML=''; carResults.innerHTML=''; carFile.value=''; }
+
+    // helper openPanel wrapper used by inline card onclicks
+    function openPanelFromCard(e){
+      const card = e.currentTarget;
+      const target = card.dataset.target || 'live';
+      openPanel(target);
+    }
+    // attach to grid cards defensively
+    document.querySelectorAll('#cardsGrid .card').forEach(c=>{
+      c.addEventListener('click', openPanelFromCard);
+    });
+
+    // keyboard: ESC closes panel
+    document.addEventListener('keydown', e=>{
+      if(e.key==='Escape') closePanel();
+    });
+
+    // initial hide of glass shell
+    (function init(){
+      glassShell.style.display='none';
+      glassShell.style.pointerEvents='none';
+    })();
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eagle OCR — Login / Sign Up</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; font-family:"Poppins",sans-serif; }
+    html, body { height:100%; overflow:hidden; background:none; }
+
+    .bg-image {
+      position: fixed; inset:0; width:100%; height:100%;
+      background: url('back1.png') no-repeat center center;
+      background-size: cover; z-index: -2;
+    }
+    .bg-overlay {
+      position: fixed; inset:0;
+      background: rgba(0,0,0,0.3); z-index: -1;
+    }
+
+    .form-container {
+      position: relative; width: 350px; max-width: 90%; margin: 80px auto; perspective:1000px;
+    }
+
+    .form-panel {
+      position: absolute; width: 100%; padding: 40px 30px;
+      border-radius: 20px; background: rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.1);
+      box-shadow:0 8px 24px rgba(0,0,0,0.35);
+      text-align:center; backdrop-filter: blur(10px);
+      transition: transform 0.6s ease, opacity 0.6s ease;
+      opacity:0; transform: translateX(100%); z-index:0;
+    }
+
+    .form-panel.active { opacity:1; transform: translateX(0); z-index:1; }
+    .form-panel.slide-left { transform: translateX(-100%); opacity:0; }
+
+    .login-logo { width: 80px; margin-bottom: 20px; }
+    .form-panel h2 { color:#fff; margin-bottom: 20px; }
+
+    .form-panel form input {
+      width:100%; padding:12px 15px; margin-bottom:20px;
+      border-radius:12px; border:1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05); color:#fff; outline:none; font-size:1rem;
+    }
+    .form-panel form input::placeholder { color:#c7dcff; }
+
+    .btn-login, .btn-signup, .btn-home {
+      width:100%; padding:12px; border-radius:12px; border:none;
+      background: linear-gradient(135deg, rgba(0,200,255,0.3), rgba(255,0,140,0.3));
+      color:#fff; font-weight:600; cursor:pointer; margin-top:12px; transition:all 0.3s ease;
+    }
+    .btn-login:hover, .btn-signup:hover { background: linear-gradient(135deg, rgba(0,200,255,0.6), rgba(255,0,140,0.5)); transform:translateY(-3px);}
+    .btn-home { background: rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);}
+    .btn-home:hover { background: rgba(0,200,255,0.2); transform:translateY(-2px); }
+
+    @media(max-width:500px){ .form-container{ margin:50px 20px;} .login-logo{width:60px;} }
+  </style>
+</head>
+<body>
+
+  <div class="bg-image"></div>
+  <div class="bg-overlay"></div>
+
+  <div class="form-container">
+    <!-- Login Panel -->
+    <div class="form-panel active" id="login-panel">
+      <img src="logologin.png" alt="Logo" class="login-logo">
+      <h2>Login</h2>
+      <form id="login-form">
+        <input type="text" placeholder="Username or Email" required>
+        <input type="password" placeholder="Password" required>
+        <button type="submit" class="btn-login">Login</button>
+      </form>
+      <button class="btn-signup" id="show-signup">Go to Sign Up</button>
+      <button class="btn-home" id="home-btn">Back to Home</button>
+    </div>
+
+    <!-- Sign Up Panel -->
+    <div class="form-panel" id="signup-panel">
+      <img src="logologin.png" alt="Logo" class="login-logo">
+      <h2>Sign Up</h2>
+      <form id="signup-form">
+        <input type="text" placeholder="Username" required>
+        <input type="email" placeholder="Email" required>
+        <input type="password" placeholder="Password" required>
+        <input type="password" placeholder="Confirm Password" required>
+        <button type="submit" class="btn-signup">Sign Up</button>
+      </form>
+      <button class="btn-login" id="show-login">Go to Login</button>
+      <button class="btn-home" id="home-btn2">Back to Home</button>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const loginPanel = document.getElementById('login-panel');
+      const signupPanel = document.getElementById('signup-panel');
+
+      // Switch panels
+      document.getElementById('show-signup').addEventListener('click', () => {
+        loginPanel.classList.remove('active');
+        loginPanel.classList.add('slide-left');
+        signupPanel.classList.add('active');
+        setTimeout(()=>{ loginPanel.classList.remove('slide-left'); },600);
+      });
+      document.getElementById('show-login').addEventListener('click', () => {
+        signupPanel.classList.remove('active');
+        signupPanel.classList.add('slide-left');
+        loginPanel.classList.add('active');
+        setTimeout(()=>{ signupPanel.classList.remove('slide-left'); },600);
+      });
+
+      // Home buttons
+      document.getElementById('home-btn').addEventListener('click', ()=>{ window.location.href='eagle.html'; });
+      document.getElementById('home-btn2').addEventListener('click', ()=>{ window.location.href='eagle.html'; });
+
+      // Login submit
+      document.getElementById('login-form').addEventListener('submit', e=>{
+        e.preventDefault();
+        const usernameOrEmail = e.target[0].value.trim();
+        const password = e.target[1].value.trim();
+        if(usernameOrEmail && password){
+          // Redirect to next interface
+          window.location.href='dashboard.html'; // replace with your next interface
+        } else alert('Please enter username/email and password');
+      });
+
+      // Sign up submit
+      document.getElementById('signup-form').addEventListener('submit', e=>{
+        e.preventDefault();
+        const username = e.target[0].value.trim();
+        const email = e.target[1].value.trim();
+        const password = e.target[2].value.trim();
+        const confirmPassword = e.target[3].value.trim();
+        if(!username||!email||!password||!confirmPassword){
+          alert('Please fill all fields'); return;
+        }
+        if(password !== confirmPassword){ alert('Passwords do not match'); return; }
+        // Redirect to next interface
+        window.location.href='dashboard.html'; // replace with your next interface
+      });
+
+      // Eagle.html buttons fix (assuming class "login-btn" & "signup-btn")
+      const eagleLoginBtn = document.querySelector('.login-btn');
+      if(eagleLoginBtn) eagleLoginBtn.addEventListener('click', ()=>{ window.location.href='login.html'; });
+      const eagleSignupBtn = document.querySelector('.signup-btn');
+      if(eagleSignupBtn) eagleSignupBtn.addEventListener('click', ()=>{ 
+        window.location.href='login.html#signup'; 
+      });
+
+      // Auto show signup if anchor exists
+      if(window.location.hash === '#signup'){
+        loginPanel.classList.remove('active');
+        loginPanel.classList.add('slide-left');
+        signupPanel.classList.add('active');
+        setTimeout(()=>{ loginPanel.classList.remove('slide-left'); },600);
+      }
+
+    });
+  </script>
+</body>
+</html>
